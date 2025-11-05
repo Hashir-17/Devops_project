@@ -23,7 +23,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image (this can still be done)
+                    // Build Docker image
                     sh 'docker build -t $DOCKER_IMAGE .'
                 }
             }
@@ -44,7 +44,7 @@ pipeline {
                     // Ensure the private key is available and directly pass it to SSH
                     withCredentials([file(credentialsId: 'EC2_SSH_PRIVATE_KEY', variable: 'SSH_KEY')]) {
                         sh """
-                            # SSH into EC2 instance and deploy the Docker container
+                            # Use SSH to deploy the app
                             ssh -o StrictHostKeyChecking=no -i <(echo "\$SSH_KEY") $EC2_USER@$EC2_HOST << 'EOF'
                                 # Stop and remove any existing container
                                 docker stop react-app || true
