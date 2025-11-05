@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'EC2_IP', defaultValue: '', description: 'The IP address of the EC2 instance')
+    }
+
     environment {
         DOCKER_IMAGE = 'hashir7/todo-app:latest'  // Docker image tag
         EC2_HOST = "${params.EC2_IP}"  // Use the parameter value for EC2 IP
@@ -46,7 +50,7 @@ pipeline {
                             chmod 600 /tmp/ssh_key.pem
 
                             # SSH into EC2 instance to deploy the Docker container
-                            ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key.pem ec2-user@$EC2_HOST << 'EOF'
+                            ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key.pem ubuntu@$EC2_HOST << 'EOF'
                             docker stop react-app || true
                             docker rm react-app || true
                             docker run -d --name react-app -p 80:80 $DOCKER_IMAGE
