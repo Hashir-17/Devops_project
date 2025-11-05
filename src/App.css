@@ -1,38 +1,191 @@
+/* Body styling */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #fbc2eb, #a6c1ee);  /* Gradient background */
+  background-size: 400% 400%;
+  animation: gradientAnimation 10s ease infinite;  /* Smooth gradient animation */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Gradient animation */
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* App container */
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  background-color: rgba(255, 255, 255, 0.9);  /* Slightly transparent background */
+  width: 100%;
+  max-width: 700px;
+  padding: 30px 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  text-align: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);  /* Creates a blur effect for the background */
+}
+
+/* Header styling */
+h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Input field styles */
+input[type="text"] {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  border: 2px solid #ddd;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  outline: none;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+  border-color: #5fbae9;
+}
+
+/* Add Task Button */
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.2rem;
+  background-color: #5fbae9;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #4a92c5;
+  transform: scale(1.05);
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 15px 20px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+th {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 1.1rem;
+}
+
+td {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Table Row Styling */
+tr:hover {
+  background-color: #f1f1f1;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Edit and Delete Buttons */
+button {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 15px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+/* Edit button color */
+button.edit {
+  background-color: #4CAF50;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+button.edit:hover {
+  background-color: #45a049;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Delete button color */
+button.delete {
+  background-color: #f44336;
+  color: white;
+}
+
+button.delete:hover {
+  background-color: #e53935;
+}
+
+/* Save button */
+button.save {
+  background-color: #4CAF50;
+  color: white;
+}
+
+button.save:hover {
+  background-color: #45a049;
+}
+
+/* Edit input field */
+li input[type="text"] {
+  width: 70%;
+  padding: 8px;
+  margin-right: 10px;
+  border-radius: 20px;
+  border: 2px solid #ddd;
+  outline: none;
+  font-size: 1rem;
+}
+
+/* Floating action button for 'Add Task' */
+button.add-task-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: #5fbae9;
+  border-radius: 50%;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  font-size: 2rem;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button.add-task-btn:hover {
+  background-color: #4a92c5;
+  transform: scale(1.1);
+}
+
+button.add-task-btn:focus {
+  outline: none;
 }
