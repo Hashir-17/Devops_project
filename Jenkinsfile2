@@ -1,51 +1,26 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'EC2_IP', defaultValue: '', description: 'The IP of the EC2 instance')
+    }
+
     environment {
-        DOCKER_IMAGE = 'hashir7/todo-app:latest'  // Docker image tag
-        EC2_HOST = "${params.EC2_IP}"  // Use the parameter value for EC2 IP
-        SSH_PRIVATE_KEY = credentials('EC2_SSH_PRIVATE_KEY')  // Jenkins credentials for SSH
+        DOCKER_IMAGE = 'hashir7/todo-app:latest'
+        EC2_HOST = "${params.EC2_IP}"  // Use the passed parameter value for EC2 IP
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the latest code from GitHub
-                git 'https://github.com/Hashir-17/Devops_project.git'  // Replace with your repo
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build Docker image
-                    sh 'docker build -t $DOCKER_IMAGE .'
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Use Docker Hub credentials for login
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        // Log in to Docker Hub
-                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-                        
-                        // Push Docker image to Docker Hub
-                        sh "docker push $DOCKER_IMAGE"
-                    }
-                }
-            }
-        }
-
+        // Other stages...
+        
         stage('Deploy to EC2') {
             steps {
                 script {
-                    // SSH into EC2 and deploy the Docker container
                     withCredentials([file(credentialsId: 'EC2_SSH_PRIVATE_KEY', variable: 'SSH_KEY')]) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@$EC2_HOST << 'EOF'
+                            echo \$SSH_KEY > /tmp/ssh_key.pem
+                            chmod 600 /tmp/ssh_key.pem
+                            ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key.pem ec2-user@$EC2_HOST << 'EOF'
                             docker stop react-app || true
                             docker rm react-app || true
                             docker run -d --name react-app -p 80:80 $DOCKER_IMAGE
