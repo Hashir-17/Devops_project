@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'hashir7/todo-app:latest'  // Docker image tag
+        EC2_HOST = 'your-ec2-public-ip'   // Your EC2 public IP
+        SSH_PRIVATE_KEY = credentials('EC2_SSH_PRIVATE_KEY')  // Jenkins credentials for SSH
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the latest code from GitHub
+                git 'https://github.com/your-username/Devops_project.git'  // Replace with your repo
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh 'docker build -t $DOCKER_IMAGE .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Push Docker image to Docker Hub
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                script {
+                    // SSH into EC2 and deploy the Docker container
+                    sh """
+                        ssh -o StrictHostKeyChecking=no -i /path/to/your-key.pem ec2-user@$EC2_HOST << 'EOF'
+                        docker stop react-app || true
+                        docker rm react-app || true
+                        docker run -d --name react-app -p 80:80 $DOCKER_IMAGE
+                        EOF
+                    """
+                }
+            }
+        }
+    }
+}
