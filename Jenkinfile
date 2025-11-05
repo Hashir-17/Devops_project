@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         // Define a string parameter for the EC2 instance IP
-        string(name: 'EC2_IP', defaultValue: 'your-default-ec2-ip', description: 'Public IP of the EC2 instance')
+        string(name: 'EC2_IP', defaultValue: '18.144.18.170', description: 'Public IP of the EC2 instance') //can change default value
     }
 
     environment {
@@ -16,7 +16,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the latest code from GitHub
-                git 'https://github.com/your-username/Devops_project.git'  // Replace with your repo
+                git 'https://github.com/Hashir-17/Devops_project.git'  // Replace with your repo
             }
         }
 
