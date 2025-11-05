@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'EC2_IP', defaultValue: '', description: 'The IP address of the EC2 instance')
+    }
+
+    environment {
+        DOCKER_IMAGE = 'hashir7/todo-app:latest'  // Docker image tag
+        EC2_USER = 'ubuntu' // Change to 'ec2-user' if using Amazon Linux
+        EC2_HOST = "${params.EC2_IP}"  // The IP address of the EC2 instance
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the latest code from GitHub
+                git url: 'https://github.com/Hashir-17/Devops_project.git',
+                    credentialsId: 'github-token'  // The ID of the credentials added in Jenkins
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image (this can still be done)
+                    sh 'docker build -t $DOCKER_IMAGE .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Push Docker image to Docker Hub
+                    sh "docker push $DOCKER_IMAGE"
+                }
+            }
+        }
+
+        stage('Deploy to EC2 via SSH') {
+            steps {
+                script {
+                    // Ensure the private key is available and set permissions
+                    withCredentials([file(credentialsId: 'EC2_SSH_PRIVATE_KEY', variable: 'SSH_KEY')]) {
+                        sh """
+                            # Save the SSH key to a temporary file
+                            echo "\$SSH_KEY" > /tmp/ssh_key.pem
+
+                            # Set proper permissions on the SSH key
+                            chmod 600 /tmp/ssh_key.pem
+
+                            # SSH into EC2 instance and deploy the Docker container
+                            ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+                                # Stop and remove any existing container
+                                docker stop react-app || true
+                                docker rm react-app || true
+
+                                # Pull the latest Docker image
+                                docker pull $DOCKER_IMAGE
+
+                                # Run the Docker container
+                                docker run -d --name react-app -p 80:80 $DOCKER_IMAGE
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
