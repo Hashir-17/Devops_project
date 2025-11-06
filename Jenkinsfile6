@@ -61,19 +61,21 @@ pipeline {
         }
 
         stage('Verify Deployment') {
-            steps {
-                script {
-                    // Test if the app is running by accessing the EC2 public IP
-                    def response = sh(script: "curl -s http://${params.AWS_INSTANCE_IP}", returnStdout: true).trim()
-                    if (response.contains('todo-app')) {
-                        echo "Todo App is running successfully!"
-                    } else {
-                        error "Deployment failed. Todo App is not running."
-                    }
-                }
+    steps {
+        script {
+            // Test if the app is running by accessing the EC2 public IP
+            def response = sh(script: "curl -s http://${params.AWS_INSTANCE_IP}", returnStdout: true).trim()
+
+            // Check if the container is responding with "React App" in the response
+            if (response.contains('React App')) {
+                echo "Todo App is running successfully!"
+            } else {
+                error "Deployment failed. Todo App is not running."
             }
         }
     }
+}
+
     
     post {
         always {
