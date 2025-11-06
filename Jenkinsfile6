@@ -18,17 +18,23 @@ pipeline {
             }
         }
 
-        stage('Deploy to Local Docker') {
-            steps {
-                script {
-                    // Pull the pre-built Docker image from DockerHub and deploy it locally
-                    sh """
-                    docker pull ${DOCKER_IMAGE} && \
-                    docker run -d -p 80:80 --name todo-app ${DOCKER_IMAGE}
-                    """
-                }
-            }
+       stage('Deploy to Local Docker') {
+    steps {
+        script {
+            // Stop and remove any existing container named 'todo-app'
+            sh """
+            docker ps -q -f name=todo-app | xargs -r docker stop
+            docker ps -a -q -f name=todo-app | xargs -r docker rm
+            """
+
+            // Pull the Docker image and run a new container
+            sh """
+            docker pull ${DOCKER_IMAGE} && \
+            docker run -d -p 80:80 --name todo-app ${DOCKER_IMAGE}
+            """
         }
+    }
+}
 
         stage('Deploy to AWS EC2 (SSH via Jenkins Credential)') {
             steps {
