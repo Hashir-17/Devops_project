@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    
+    parameters {
+        string(name: 'AWS_INSTANCE_IP', defaultValue: '', description: 'Enter the Public IP of your AWS EC2 instance')
+    }
+
+    environment {
+        // Docker image on DockerHub
+        DOCKER_IMAGE = 'your-dockerhub-username/todo-app'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Checkout the code from the GitHub repository
+                git branch: 'main', url: 'https://github.com/your-username/todo-app.git'
+            }
+        }
+
+        stage('Deploy to Local Docker') {
+            steps {
+                script {
+                    // Pull the pre-built Docker image from DockerHub and deploy it locally
+                    sh """
+                    docker pull ${DOCKER_IMAGE} && \
+                    docker run -d -p 80:80 --name todo-app ${DOCKER_IMAGE}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to AWS EC2 (SSH via Jenkins Credential)') {
+            steps {
+                script {
+                    // Using SSH credentials in Jenkins to deploy to EC2 instance
+                    withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY_PATH', usernameVariable: 'AWS_USER')]) {
+                        // Deploy the Docker container on the AWS EC2 instance
+                        sh """
+                        ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${AWS_USER}@${params.AWS_INSTANCE_IP} \
+                        'docker pull ${DOCKER_IMAGE} && \
+                        docker run -d -p 80:80 --name todo-app ${DOCKER_IMAGE}'
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    // Test if the app is running by accessing the local IP address
+                    def response = sh(script: "curl -s http://localhost", returnStdout: true).trim()
+                    if (response.contains('todo-app')) {
+                        echo "Todo App is running successfully!"
+                    } else {
+                        error "Deployment failed. Todo App is not running."
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up any resources if needed
+            echo 'Pipeline finished!'
+        }
+    }
+}
