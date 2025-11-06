@@ -18,30 +18,38 @@ pipeline {
             }
         }
 
-       stage('Deploy to Local Docker') {
-    steps {
-        script {
-            // Stop and remove any existing container named 'todo-app'
-            sh """
-            docker ps -q -f name=todo-app | xargs -r docker stop
-            docker ps -a -q -f name=todo-app | xargs -r docker rm
-            """
+        stage('Deploy to Local Docker') {
+            steps {
+                script {
+                    // Stop and remove any existing container named 'todo-app'
+                    sh """
+                    docker ps -q -f name=todo-app | xargs -r docker stop
+                    docker ps -a -q -f name=todo-app | xargs -r docker rm
+                    """
 
-            // Pull the Docker image and run a new container
-            sh """
-            docker pull ${DOCKER_IMAGE} && \
-            docker run -d -p 80:80 --name todo-app ${DOCKER_IMAGE}
-            """
+                    // Pull the Docker image and run a new container
+                    sh """
+                    docker pull ${DOCKER_IMAGE} && \
+                    docker run -d -p 80:80 --name todo-app ${DOCKER_IMAGE}
+                    """
+                }
+            }
         }
-    }
-}
 
         stage('Deploy to AWS EC2 (SSH via Jenkins Credential)') {
             steps {
                 script {
                     // Using SSH credentials in Jenkins to deploy to EC2 instance
                     withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY_PATH', usernameVariable: 'AWS_USER')]) {
-                        // Deploy the Docker container on the AWS EC2 instance
+                        // Here, 'AWS_USER' will be 'ubuntu' as you set that in Jenkins credentials
+                        // SSH commands to stop and remove any existing 'todo-app' container on the EC2 instance
+                        sh """
+                        ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${AWS_USER}@${params.AWS_INSTANCE_IP} \
+                        'docker ps -q -f name=todo-app | xargs -r docker stop && \
+                        docker ps -a -q -f name=todo-app | xargs -r docker rm'
+                        """
+
+                        // Pull the Docker image and run a new container
                         sh """
                         ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${AWS_USER}@${params.AWS_INSTANCE_IP} \
                         'docker pull ${DOCKER_IMAGE} && \
@@ -55,8 +63,8 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 script {
-                    // Test if the app is running by accessing the local IP address
-                    def response = sh(script: "curl -s http://localhost", returnStdout: true).trim()
+                    // Test if the app is running by accessing the EC2 public IP
+                    def response = sh(script: "curl -s http://${params.AWS_INSTANCE_IP}", returnStdout: true).trim()
                     if (response.contains('todo-app')) {
                         echo "Todo App is running successfully!"
                     } else {
@@ -74,3 +82,4 @@ pipeline {
         }
     }
 }
+
