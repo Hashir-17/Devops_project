@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Checkout the code from the GitHub repository
-                git branch: 'master', url: 'https://github.com/Hashir-17/Devops_project.git'
+                git branch: 'main', url: 'https://github.com/Hashir-17/Devops_project.git'
             }
         }
 
@@ -41,7 +41,6 @@ pipeline {
                 script {
                     // Using SSH credentials in Jenkins to deploy to EC2 instance
                     withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY_PATH', usernameVariable: 'AWS_USER')]) {
-                        // Here, 'AWS_USER' will be 'ubuntu' as you set that in Jenkins credentials
                         // SSH commands to stop and remove any existing 'todo-app' container on the EC2 instance
                         sh """
                         ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${AWS_USER}@${params.AWS_INSTANCE_IP} \
@@ -61,21 +60,21 @@ pipeline {
         }
 
         stage('Verify Deployment') {
-    steps {
-        script {
-            // Test if the app is running by accessing the EC2 public IP
-            def response = sh(script: "curl -s http://${params.AWS_INSTANCE_IP}", returnStdout: true).trim()
+            steps {
+                script {
+                    // Test if the app is running by accessing the EC2 public IP
+                    def response = sh(script: "curl -s http://${params.AWS_INSTANCE_IP}", returnStdout: true).trim()
 
-            // Check if the container is responding with "React App" in the response
-            if (response.contains('React App')) {
-                echo "Todo App is running successfully!"
-            } else {
-                error "Deployment failed. Todo App is not running."
+                    // Check if the container is responding with "React App" in the response
+                    if (response.contains('React App')) {
+                        echo "Todo App is running successfully!"
+                    } else {
+                        error "Deployment failed. Todo App is not running."
+                    }
+                }
             }
         }
     }
-}
-
     
     post {
         always {
@@ -84,4 +83,3 @@ pipeline {
         }
     }
 }
-
