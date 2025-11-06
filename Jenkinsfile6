@@ -7,14 +7,14 @@ pipeline {
 
     environment {
         // Docker image on DockerHub
-        DOCKER_IMAGE = 'your-dockerhub-username/todo-app'
+        DOCKER_IMAGE = 'hashir7/todo-app'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 // Checkout the code from the GitHub repository
-                git branch: 'main', url: 'https://github.com/your-username/todo-app.git'
+                git branch: 'master', url: 'https://github.com/Hashir-17/Devops_project.git'
             }
         }
 
